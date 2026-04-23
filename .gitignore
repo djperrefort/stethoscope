@@ -1,0 +1,26 @@
+# Application files
+stethoscope/static_files/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.log
+*.eml
+
+# Distribution and packaging
+__pycache__/
+dist/
+
+# IDE / Developer
+.idea/
+*.env
+*.pstats
+
+# OS
+.DS_Store
+
+# Documentation
+site/
+
+# Testing
+*.coverage
