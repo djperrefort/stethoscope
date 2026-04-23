@@ -1,6 +1,6 @@
 # Stethoscope
 
-A lightweight heartbeat monitor for tracking deployed application counts.
+An application license server.
 
 ## Quickstart
 
