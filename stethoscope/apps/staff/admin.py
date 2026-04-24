@@ -60,21 +60,21 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     )
 
     def has_view_permission(self, request: HttpRequest, obj: User | None = None) -> bool:
-        """Allow viewing user accounts only for superusers."""
+        """Allow viewing user accounts for superusers only."""
 
         return request.user.is_superuser
 
     def has_add_permission(self, request: HttpRequest) -> bool:
-        """Allow account creation only for superusers."""
+        """Allow account creation for superusers only."""
 
         return request.user.is_superuser
 
     def has_change_permission(self, request: HttpRequest, obj: User | None = None) -> bool:
-        """Allow editing user accounts only for superusers."""
+        """Allow editing user accounts for superusers only."""
 
         return request.user.is_superuser
 
     def has_delete_permission(self, request: HttpRequest, obj: User | None = None) -> bool:
-        """Allow deleting user accounts only for superusers."""
+        """Allow deleting user accounts for superusers only."""
 
         return request.user.is_superuser

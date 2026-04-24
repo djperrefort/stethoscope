@@ -1,4 +1,5 @@
-"""Database model managers for platform user accounts."""
+"""Database managers for common table-level operations."""
+
 import typing
 
 from django.contrib.auth.models import BaseUserManager
@@ -10,7 +11,7 @@ __all__ = ['UserManager']
 
 
 class UserManager(BaseUserManager):
-    """A custom manager for username-based user creation."""
+    """Object manager for the `User` model."""
 
     def create_user(self, username: str, password: str | None = None, **extra_fields) -> 'User':
         """Create and return a new user account.
@@ -21,7 +22,7 @@ class UserManager(BaseUserManager):
             **extra_fields: Additional field values passed to the model constructor.
 
         Returns:
-            The newly created User instance.
+            The newly created `User` instance.
         """
 
         user = self.model(username=username, **extra_fields)
@@ -38,7 +39,7 @@ class UserManager(BaseUserManager):
             **extra_fields: Additional field values passed to the model constructor.
 
         Returns:
-            The newly created User instance with superuser privileges.
+            The newly created `User` instance with superuser privileges.
         """
 
         extra_fields['is_superuser'] = True

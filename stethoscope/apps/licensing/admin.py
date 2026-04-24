@@ -16,7 +16,7 @@ __all__ = [
 
 
 class HeartBeatInline(TabularInline):
-    """An inline table of heartbeats shown on the `LicenseToken` admin page."""
+    """An inline table of `HeartBeat` objects."""
 
     model = HeartBeat
     extra = 0
@@ -31,7 +31,7 @@ class HeartBeatInline(TabularInline):
 
 
 class LicenseTokenInline(TabularInline):
-    """An inline table of license tokens shown on the `Customer` and `Application` admin pages."""
+    """An inline table of `LicenseToken` objects."""
 
     model = LicenseToken
     extra = 0
@@ -129,22 +129,22 @@ class HeartBeatAdmin(ModelAdmin):
 class LicenseTokenAdmin(ModelAdmin):
     """Admin configuration for the `LicenseToken` model."""
 
-    list_display = ('token', 'customer', 'application', 'starts_at', 'expires_at', 'created_at')
+    list_display = ('customer', 'application', 'starts_at', 'expires_at', 'created_at')
     list_filter = ('application', 'starts_at', 'expires_at', 'created_at')
-    search_fields = ('token', 'customer__name', 'customer__email', 'application__name')
-    readonly_fields = ('token', 'created_at', 'updated_at')
+    search_fields = ('customer__name', 'customer__email', 'application__name')
+    readonly_fields = ('created_at', 'updated_at', 'retrieved_at', 'retrieve_id')
     autocomplete_fields = ('customer', 'application')
     inlines = (HeartBeatInline,)
     list_display_links = list_display
 
     fieldsets = (
         (None, {
-            'fields': ('token', 'customer', 'application'),
+            'fields': ('customer', 'application', 'retrieve_id'),
         }),
         ('Validity Window', {
             'fields': ('starts_at', 'expires_at'),
         }),
         ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
+            'fields': ('created_at', 'updated_at', 'retrieved_at'),
         }),
     )

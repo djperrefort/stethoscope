@@ -1,6 +1,6 @@
 # Stethoscope
 
-A lightweight heartbeat monitor for tracking deployed application counts.
+An application license server.
 
 ## Quickstart
 
@@ -31,7 +31,7 @@ This includes applying the database schema and initializing static content.
 
 ```shell
 stethoscope migrate
-stethoscope collectstatic
+stethoscope collectstatic --no-input
 ```
 
 Finally, create a new admin user account and launch a development sever.
@@ -73,10 +73,10 @@ Settings for regulating the incoming HTTP request load.
 
 Database connection settings.
 
-| Environment Variable | Default       | Description                                                         |
-|----------------------|---------------|---------------------------------------------------------------------|
-| `DB_NAME`            | `stethoscope` | Database name (Postgres) or SQLite filename (without extension).    |
-| `DB_HOST`            | *(unset)*     | Postgres host. If unset, the app falls back to a local SQLite file. |
-| `DB_USER`            | *(empty)*     | Postgres username. Only used when `DB_HOST` is set.                 |
-| `DB_PASSWORD`        | *(empty)*     | Postgres password. Only used when `DB_HOST` is set.                 |
-| `DB_PORT`            | `5432`        | Postgres port. Only used when `DB_HOST` is set.                     |
+| Environment Variable | Default       | Description                |
+|----------------------|---------------|----------------------------|
+| `DB_NAME`            | `stethoscope` | Postgres database name.    |
+| `DB_HOST`            |               | Postgres server host.      |
+| `DB_USER`            |               | Postgres server username.  |
+| `DB_PASSWORD`        |               | Postgres server password.  |
+| `DB_PORT`            | `5432`        | Postgres server port.      |

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Your License Token{% endblock %}
+
+{% block content %}
+  <h1>Your license token</h1>
+  <p>Copy and store this token somewhere safe. It will not be shown again.</p>
+
+  <div class="token-display">
+    <span class="token-display__value" id="token-value">{{ token_plain }}</span>
+    <button class="token-display__copy" id="copy-btn" type="button" aria-label="Copy token to clipboard">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" id="copy-icon">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+      <span id="copy-label">Copy</span>
+    </button>
+  </div>
+
+  <table class="meta-table">
+    <tr>
+      <td>Customer</td>
+      <td>{{ token.customer.name }}</td>
+    </tr>
+    <tr>
+      <td>Application</td>
+      <td>
+        {{ token.application.name }}
+        {% if token.application.version %}
+          &nbsp;<span style="color: var(--color-base-400); font-weight: 400;">v{{ token.application.version }}</span>
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td>Valid from</td>
+      <td>{{ token.starts_at|date:"N j, Y" }}</td>
+    </tr>
+    <tr>
+      <td>Expires</td>
+      <td>
+        {% if token.expires_at %}
+          {{ token.expires_at|date:"N j, Y" }}
+        {% else %}
+          <span style="color: var(--color-base-400);">No expiry</span>
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <div class="notice notice--warning">
+    <svg class="notice__icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <span>
+      This page will not be accessible again. Make sure you have saved your token before closing this window.
+    </span>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('copy-btn').addEventListener('click', function () {
+    const value = document.getElementById('token-value').textContent.trim();
+    const label = document.getElementById('copy-label');
+    const icon  = document.getElementById('copy-icon');
+
+    navigator.clipboard.writeText(value).then(function () {
+      label.textContent = 'Copied';
+      icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+      setTimeout(function () {
+        label.textContent = 'Copy';
+        icon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
+      }, 2500);
+    });
+  });
+</script>
+{% endblock %}

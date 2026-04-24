@@ -1,4 +1,4 @@
-"""Top level Django application settings."""
+"""Top level application settings."""
 
 import importlib.metadata
 import os

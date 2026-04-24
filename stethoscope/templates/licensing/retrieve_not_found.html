@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Token Not Found{% endblock %}
+
+{% block content %}
+  <h1>Token not found</h1>
+  <p>No license token could be found for this retrieval link. The link may be invalid or have expired.</p>
+
+  <div class="notice notice--error">
+    <svg class="notice__icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span>
+      If you believe this is an error, please contact your license administrator for assistance.
+    </span>
+  </div>
+{% endblock %}

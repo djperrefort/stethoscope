@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "stethoscope"
 version = "0.0.0"
 readme = "README.md"
-description = "A lightweight heartbeat monitor."
+description = "A lightweight application licensing server."
 authors = [{ name = "Better HPC LLC" }]
 keywords = ["Better", "HPC", "stethoscope"]
 requires-python = ">=3.14,<4"
@@ -14,11 +14,11 @@ dependencies = [
     "django==6.0.4",
     "django-environ==0.13.0",
     "django-jazzmin==3.0.4",
+    "django-unfold==0.90.0",
     "djangorestframework==3.17.1",
     "psycopg2-binary==2.9.11",
     "servestatic==4.3.0",
     "uvicorn==0.45.0",
-    "django-unfold==0.90.0",
 ]
 
 [project.scripts]

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Retrieve License Token{% endblock %}
+
+{% block content %}
+  <h1>Retrieve your license token</h1>
+  <p>Your token has been issued for the following license. Review the details below before continuing.</p>
+
+  <table class="meta-table">
+    <tr>
+      <td>Customer</td>
+      <td>{{ token.customer.name }}</td>
+    </tr>
+    <tr>
+      <td>Application</td>
+      <td>
+        {{ token.application.name }}
+        {% if token.application.version %}
+          &nbsp;<span style="color: var(--color-base-400); font-weight: 400;">v{{ token.application.version }}</span>
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td>Valid from</td>
+      <td>{{ token.starts_at|date:"N j, Y" }}</td>
+    </tr>
+    <tr>
+      <td>Expires</td>
+      <td>
+        {% if token.expires_at %}
+          {{ token.expires_at|date:"N j, Y" }}
+        {% else %}
+          <span style="color: var(--color-base-400);">No expiry</span>
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <div class="notice notice--warning">
+    <svg class="notice__icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <span>
+      This token can only be retrieved <strong>once</strong>. After you confirm, the plaintext value
+      will be shown a single time and cannot be recovered. Store it somewhere safe before closing the page.
+    </span>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="btn-group">
+      <button type="submit" class="btn btn--primary">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        Reveal token
+      </button>
+    </div>
+  </form>
+{% endblock %}

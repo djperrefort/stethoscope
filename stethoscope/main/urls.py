@@ -7,5 +7,5 @@ from django.urls import include, path
 urlpatterns = [
     path('', lambda *args: HttpResponse(), name='home'),
     path('dash/', admin.site.urls, name='admin'),
-    path('lic/', include('stethoscope.apps.licensing.urls', namespace='licensing')),
+    path('key/', include('stethoscope.apps.licensing.urls', namespace='licensing')),
 ]
