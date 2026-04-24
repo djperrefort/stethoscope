@@ -1,0 +1,19 @@
+name: 🤖 Test
+
+on:
+  workflow_call:
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fetch image artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: keystone-api-docker
+          path: /tmp
+
+      - name: Run tests
+        run: echo "TODO"
