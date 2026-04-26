@@ -23,6 +23,7 @@ class DeploymentInline(TabularInline):
 
     extra = 0
     model = Deployment
+    per_page = 10
     fields = ('identifier', 'activated_at')
     readonly_fields = fields
     ordering = ('-activated_at',)
@@ -38,6 +39,7 @@ class HeartBeatInline(TabularInline):
 
     extra = 0
     model = HeartBeat
+    per_page = 10
     fields = ('ip', 'uuid', 'created_at')
     readonly_fields = fields
     ordering = ('-created_at',)
@@ -53,6 +55,7 @@ class LicenseTokenInline(TabularInline):
 
     extra = 0
     model = LicenseToken
+    per_page = 10
     fields = ('customer', 'application', 'starts_at', 'expires_at', 'enabled')
     readonly_fields = fields
 
