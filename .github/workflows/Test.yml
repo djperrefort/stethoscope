@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Fetch image artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v7
         with:
           name: stethoscope-docker
           path: /tmp
