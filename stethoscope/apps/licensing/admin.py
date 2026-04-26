@@ -129,12 +129,12 @@ class DeploymentAdmin(ModelAdmin):
     list_filter = ('activated_at',)
     search_fields = ('identifier', 'license_token__token')
     ordering = ('-activated_at',)
-    readonly_fields = ('identifier', 'license_token', 'activated_at')
+    readonly_fields = ('identifier', 'license_token', 'get_application', 'get_customer', 'activated_at')
     list_display_links = list_display
 
     fieldsets = (
         (None, {
-            'fields': ('license_token', 'identifier', 'activated_at'),
+            'fields': ('get_customer', 'get_application', 'license_token', 'identifier', 'activated_at'),
         }),
     )
 
