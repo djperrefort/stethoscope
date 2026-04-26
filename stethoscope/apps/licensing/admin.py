@@ -4,6 +4,7 @@ from typing import Literal
 
 from django.conf import settings
 from django.contrib import admin
+from django.db.models import QuerySet
 from django.urls import reverse
 from unfold.admin import ModelAdmin, TabularInline
 
@@ -23,7 +24,7 @@ class DeploymentInline(TabularInline):
 
     extra = 0
     model = Deployment
-    per_page = 10
+    per_page = 5
     fields = ('identifier', 'activated_at')
     readonly_fields = fields
     ordering = ('-activated_at',)
@@ -39,7 +40,7 @@ class HeartBeatInline(TabularInline):
 
     extra = 0
     model = HeartBeat
-    per_page = 10
+    per_page = 5
     fields = ('ip', 'uuid', 'created_at')
     readonly_fields = fields
     ordering = ('-created_at',)
@@ -55,7 +56,7 @@ class LicenseTokenInline(TabularInline):
 
     extra = 0
     model = LicenseToken
-    per_page = 10
+    per_page = 5
     fields = ('customer', 'application', 'starts_at', 'expires_at', 'enabled')
     readonly_fields = fields
 
@@ -124,7 +125,7 @@ class CustomerAdmin(ModelAdmin):
 class DeploymentAdmin(ModelAdmin):
     """Admin configuration for the `Deployment` model."""
 
-    list_display = ('identifier', 'license_token', 'activated_at')
+    list_display = ('get_application', 'get_customer', 'identifier', 'license_token', 'activated_at')
     list_filter = ('activated_at',)
     search_fields = ('identifier', 'license_token__token')
     ordering = ('-activated_at',)
@@ -146,6 +147,47 @@ class DeploymentAdmin(ModelAdmin):
         """Disable record creation."""
 
         return False
+
+    def get_queryset(self, request) -> QuerySet:
+        """Return deployments with license token relations pre-fetched.
+
+        Args:
+            request: The current HTTP request.
+
+        Returns:
+            A queryset with license_token, application, and customer pre-selected.
+        """
+
+        return super().get_queryset(request).select_related(
+            'license_token__application',
+            'license_token__customer',
+        )
+
+    @admin.display(description='Application')
+    def get_application(self, obj: Deployment) -> str:
+        """Return the application name for the deployment's license token.
+
+        Args:
+            obj: The Deployment instance being displayed.
+
+        Returns:
+            The name of the associated application.
+        """
+
+        return obj.license_token.application.name
+
+    @admin.display(description='Customer')
+    def get_customer(self, obj: Deployment) -> str:
+        """Return the customer name for the deployment's license token.
+
+        Args:
+            obj: The Deployment instance being displayed.
+
+        Returns:
+            The name of the associated customer.
+        """
+
+        return obj.license_token.customer.name
 
 
 @admin.register(HeartBeat)
@@ -175,6 +217,18 @@ class HeartBeatAdmin(ModelAdmin):
 
         return False
 
+    def get_queryset(self, request) -> QuerySet:
+        """Return heartbeats with license token relations pre-fetched.
+
+        Args:
+            request: The current HTTP request.
+
+        Returns:
+            A queryset with license_token pre-selected.
+        """
+
+        return super().get_queryset(request).select_related('license_token')
+
 
 @admin.register(LicenseToken)
 class LicenseTokenAdmin(ModelAdmin):
@@ -203,6 +257,21 @@ class LicenseTokenAdmin(ModelAdmin):
         }),
     )
 
+    def get_queryset(self, request) -> QuerySet:
+        """Return license tokens with customer and application relations pre-fetched.
+
+        Args:
+            request: The current HTTP request.
+
+        Returns:
+            A queryset with customer and application pre-selected.
+        """
+
+        return super().get_queryset(request).select_related(
+            'application',
+            'customer',
+        )
+
     def get_readonly_fields(self, request, obj=None):
         """Return the list of readonly fields for the model.
 
@@ -218,6 +287,7 @@ class LicenseTokenAdmin(ModelAdmin):
 
         return readonly_on_edit
 
+    @admin.display(description='Retrieval URL')
     def retrieval_url(self, obj: LicenseToken) -> str:
         """Return the retrieve endpoint URL for this token's retrieve ID as a hyperlink.
 
