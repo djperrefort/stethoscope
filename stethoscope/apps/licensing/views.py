@@ -1,4 +1,4 @@
-"""Endpoint handlers used to define request/response processing logic."""
+"""Endpoint handlers used to define request/response logic."""
 
 from django.db.models import Q
 from django.shortcuts import render
@@ -77,6 +77,7 @@ class RetrieveView(APIView):
         try:
             token = LicenseToken.objects.select_related('customer', 'application').get(
                 retrieve_id=retrieve_id,
+                enabled=True,
             )
 
         except LicenseToken.DoesNotExist:
@@ -108,6 +109,7 @@ class RetrieveView(APIView):
         try:
             token = LicenseToken.objects.select_related('customer', 'application').get(
                 retrieve_id=retrieve_id,
+                enabled=True,
             )
 
         except LicenseToken.DoesNotExist:
@@ -152,6 +154,7 @@ class ValidateView(APIView):
                 Q(expires_at__gte=now) | Q(expires_at__isnull=True),
                 token=hashed_token,
                 starts_at__lte=now,
+                enabled=True,
             )
 
         except LicenseToken.DoesNotExist:

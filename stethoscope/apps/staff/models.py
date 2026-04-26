@@ -29,20 +29,20 @@ class User(AbstractUser):
 
     @property
     def is_staff(self) -> bool:
-        """Return True for any active user, granting staff-level access."""
+        """Return `True` for any active user, granting staff-level access."""
 
         return self.is_active
 
     @is_staff.setter
-    def is_staff(self, value: bool) -> None:
+    def is_staff(self, *args, **kwargs) -> None:
         """Ignore attempts to modify staff status."""
 
-    def has_perm(self, perm: str, obj: object = None) -> bool:
+    def has_perm(self, *args, **kwargs) -> bool:
         """Return `True` for any active user, granting all object-level permissions."""
 
         return self.is_active
 
-    def has_module_perms(self, app_label: str) -> bool:
+    def has_module_perms(self, *args, **kwargs) -> bool:
         """Return `True` for any active user, granting access to all admin modules."""
 
         return self.is_active

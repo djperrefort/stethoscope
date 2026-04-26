@@ -6,7 +6,9 @@ from pathlib import Path
 
 import environ
 from django.core.management.utils import get_random_secret_key
+from django.templatetags.static import static
 
+env = environ.Env()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Application metadata
@@ -14,8 +16,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 dist = importlib.metadata.distribution('stethoscope')
 VERSION = dist.metadata['version']
 SUMMARY = dist.metadata['summary']
-
-env = environ.Env()
 
 # Core security settings
 
@@ -27,7 +27,7 @@ SECURE_HSTS_PRELOAD = env.bool("SECURE_HSTS_PRELOAD", False)
 SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", 0)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("SECURE_HSTS_SUBDOMAINS", False)
 
-SECURE_REQUIRE_AUTH = env.bool("SECURE_REQUIRE_AUTH", True)
+SERVER_URL = env.str('SECURE_SERVER_URL', default="")
 
 # App Configuration
 
@@ -61,7 +61,6 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
@@ -75,9 +74,7 @@ TEMPLATES = [
 # REST API settings
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated'
-    ],
+    'DEFAULT_PERMISSION_CLASSES': [],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
@@ -86,6 +83,9 @@ REST_FRAMEWORK = {
         'anon': env.str('API_THROTTLE_ANON', '60/min'),
         'user': env.str('API_THROTTLE_USER', '60/min')
     },
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
 }
 
 # Database
@@ -118,8 +118,9 @@ USE_TZ = True
 # Static files
 
 STATIC_URL = '/static/'
-STATIC_ROOT = Path(env.path('CONFIG_STATIC_DIR', BASE_DIR / 'static_files'))
+STATIC_ROOT = BASE_DIR / 'static_files'
 STATIC_ROOT.mkdir(mode=0o770, parents=True, exist_ok=True)
+STATICFILES_DIRS = [BASE_DIR / 'assets']
 
 STORAGES = {
     "staticfiles": {
@@ -133,7 +134,19 @@ UNFOLD = {
     "SITE_TITLE": "Stethoscope",
     "SITE_HEADER": "Stethoscope",
     "SITE_SUBHEADER": "License Management",
-    "SHOW_HISTORY": True,
+    "SITE_ICON": {
+        "light": lambda request: static("img/icon.svg"),
+        "dark": lambda request: static("img/icon.svg"),
+    },
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/svg+xml",
+            "href": lambda request: static("img/favicon.svg"),
+        },
+    ],
+    "SHOW_HISTORY": False,
     "SHOW_VIEW_ON_SITE": False,
     "SHOW_BACK_BUTTON": False,
     "SITE_SYMBOL": "stethoscope",
