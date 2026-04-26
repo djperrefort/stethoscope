@@ -16,9 +16,9 @@ dependencies = [
     "django-jazzmin==3.0.4",
     "django-unfold==0.90.0",
     "djangorestframework==3.17.1",
-    "psycopg2-binary==2.9.11",
+    "psycopg2-binary==2.9.12",
     "servestatic==4.3.0",
-    "uvicorn==0.45.0",
+    "uvicorn==0.46.0",
 ]
 
 [project.scripts]
