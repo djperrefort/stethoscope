@@ -12,7 +12,7 @@ jobs:
       - name: Fetch image artifact
         uses: actions/download-artifact@v8
         with:
-          name: keystone-api-docker
+          name: stethoscope-docker
           path: /tmp
 
       - name: Run tests
