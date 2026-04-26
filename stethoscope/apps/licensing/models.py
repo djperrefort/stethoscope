@@ -92,8 +92,8 @@ class LicenseToken(models.Model):
     token = models.CharField(max_length=64, editable=False)
     token_plain = models.CharField(max_length=64, null=True, editable=False)
     retrieve_id = models.CharField(max_length=64, null=True)
+    enabled = models.BooleanField(default=True)
     starts_at = models.DateTimeField(default=timezone.now)
-    disabled = models.BooleanField(default=False)
     expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -119,9 +119,9 @@ class LicenseToken(models.Model):
     def save(self, *args, **kwargs) -> None:
         """Save the token object.
 
-         When a new token is created, the token value and retrieval ID are set
-         using dynamically generated value and can not be set manually.
-         """
+        When a new token is created, the token value and retrieval ID are set
+        using dynamically generated values and cannot be set manually.
+        """
 
         if self.pk is None:
             token_plain = secrets.token_hex(32)
