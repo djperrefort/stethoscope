@@ -10,6 +10,7 @@ from stethoscope.apps.licensing.shortcuts import hash_token
 __all__ = [
     'Application',
     'Customer',
+    'Deployment',
     'HeartBeat',
     'LicenseToken',
 ]
@@ -95,6 +96,8 @@ class LicenseToken(models.Model):
     enabled = models.BooleanField(default=True)
     starts_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField(null=True, blank=True)
+    max_deployments = models.PositiveIntegerField(null=True, blank=True)
+    allow_deactivation = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     retrieved_at = models.DateTimeField(null=True)
@@ -133,6 +136,33 @@ class LicenseToken(models.Model):
 
     def __str__(self) -> str:  # pragma: nocover
         return f'T-{self.id}'
+
+
+class Deployment(models.Model):
+    """A registered deployment of an application running under a license token."""
+
+    class Meta:
+        """Database model settings."""
+
+        indexes = [
+            models.Index(fields=['identifier']),
+            models.Index(fields=['license_token', 'identifier']),
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['license_token', 'identifier'],
+                name='unique_deployment_license_token_identifier',
+            ),
+        ]
+
+    identifier = models.CharField(max_length=255)
+    activated_at = models.DateTimeField(auto_now_add=True)
+
+    license_token = models.ForeignKey('LicenseToken', on_delete=models.CASCADE, related_name='deployments')
+
+    def __str__(self) -> str:  # pragma: nocover
+        return f'D-{self.id}'
 
 
 class HeartBeat(models.Model):

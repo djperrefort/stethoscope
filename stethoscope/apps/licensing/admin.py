@@ -7,14 +7,30 @@ from django.contrib import admin
 from django.urls import reverse
 from unfold.admin import ModelAdmin, TabularInline
 
-from .models import Application, Customer, HeartBeat, LicenseToken
+from .models import Application, Customer, Deployment, HeartBeat, LicenseToken
 
 __all__ = [
     'ApplicationAdmin',
     'CustomerAdmin',
+    'DeploymentAdmin',
     'HeartBeatAdmin',
     'LicenseTokenAdmin',
 ]
+
+
+class DeploymentInline(TabularInline):
+    """An inline table of `Deployment` objects."""
+
+    extra = 0
+    model = Deployment
+    fields = ('identifier', 'activated_at')
+    readonly_fields = fields
+    ordering = ('-activated_at',)
+
+    def has_add_permission(self, *args, **kwargs) -> Literal[False]:
+        """Disable record creation."""
+
+        return False
 
 
 class HeartBeatInline(TabularInline):
@@ -101,6 +117,34 @@ class CustomerAdmin(ModelAdmin):
     )
 
 
+@admin.register(Deployment)
+class DeploymentAdmin(ModelAdmin):
+    """Admin configuration for the `Deployment` model."""
+
+    list_display = ('identifier', 'license_token', 'activated_at')
+    list_filter = ('activated_at',)
+    search_fields = ('identifier', 'license_token__token')
+    ordering = ('-activated_at',)
+    readonly_fields = ('identifier', 'license_token', 'activated_at')
+    list_display_links = list_display
+
+    fieldsets = (
+        (None, {
+            'fields': ('license_token', 'identifier', 'activated_at'),
+        }),
+    )
+
+    def has_change_permission(self, *args, **kwargs) -> Literal[False]:
+        """Disable record modification."""
+
+        return False
+
+    def has_add_permission(self, *args, **kwargs) -> Literal[False]:
+        """Disable record creation."""
+
+        return False
+
+
 @admin.register(HeartBeat)
 class HeartBeatAdmin(ModelAdmin):
     """Admin configuration for the `HeartBeat` model."""
@@ -138,7 +182,7 @@ class LicenseTokenAdmin(ModelAdmin):
     search_fields = ('customer__name', 'customer__email', 'application__name')
     ordering = ('customer', 'application')
     autocomplete_fields = ('customer', 'application')
-    inlines = (HeartBeatInline,)
+    inlines = (DeploymentInline, HeartBeatInline)
     list_display_links = list_display
 
     fieldsets = (
@@ -147,6 +191,9 @@ class LicenseTokenAdmin(ModelAdmin):
         }),
         ('Validity Window', {
             'fields': ('enabled', 'starts_at', 'expires_at'),
+        }),
+        ('Deployments', {
+            'fields': ('max_deployments', 'allow_deactivation'),
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'retrieved_at'),
