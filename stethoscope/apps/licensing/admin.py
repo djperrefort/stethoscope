@@ -8,31 +8,14 @@ from django.db.models import QuerySet
 from django.urls import reverse
 from unfold.admin import ModelAdmin, TabularInline
 
-from .models import Application, Customer, Deployment, HeartBeat, LicenseToken
+from .models import Application, Customer, HeartBeat, LicenseToken
 
 __all__ = [
     'ApplicationAdmin',
     'CustomerAdmin',
-    'DeploymentAdmin',
     'HeartBeatAdmin',
     'LicenseTokenAdmin',
 ]
-
-
-class DeploymentInline(TabularInline):
-    """An inline table of `Deployment` objects."""
-
-    extra = 0
-    model = Deployment
-    per_page = 5
-    fields = ('identifier', 'activated_at')
-    readonly_fields = fields
-    ordering = ('-activated_at',)
-
-    def has_add_permission(self, *args, **kwargs) -> Literal[False]:
-        """Disable record creation."""
-
-        return False
 
 
 class HeartBeatInline(TabularInline):
@@ -121,75 +104,6 @@ class CustomerAdmin(ModelAdmin):
     )
 
 
-@admin.register(Deployment)
-class DeploymentAdmin(ModelAdmin):
-    """Admin configuration for the `Deployment` model."""
-
-    list_display = ('get_application', 'get_customer', 'identifier', 'license_token', 'activated_at')
-    list_filter = ('activated_at',)
-    search_fields = ('identifier', 'license_token__token')
-    ordering = ('-activated_at',)
-    readonly_fields = ('identifier', 'license_token', 'get_application', 'get_customer', 'activated_at')
-    list_display_links = list_display
-
-    fieldsets = (
-        (None, {
-            'fields': ('get_customer', 'get_application', 'license_token', 'identifier', 'activated_at'),
-        }),
-    )
-
-    def has_change_permission(self, *args, **kwargs) -> Literal[False]:
-        """Disable record modification."""
-
-        return False
-
-    def has_add_permission(self, *args, **kwargs) -> Literal[False]:
-        """Disable record creation."""
-
-        return False
-
-    def get_queryset(self, request) -> QuerySet:
-        """Return deployments with license token relations pre-fetched.
-
-        Args:
-            request: The current HTTP request.
-
-        Returns:
-            A queryset with license_token, application, and customer pre-selected.
-        """
-
-        return super().get_queryset(request).select_related(
-            'license_token__application',
-            'license_token__customer',
-        )
-
-    @admin.display(description='Application')
-    def get_application(self, obj: Deployment) -> str:
-        """Return the application name for the deployment's license token.
-
-        Args:
-            obj: The Deployment instance being displayed.
-
-        Returns:
-            The name of the associated application.
-        """
-
-        return obj.license_token.application.name
-
-    @admin.display(description='Customer')
-    def get_customer(self, obj: Deployment) -> str:
-        """Return the customer name for the deployment's license token.
-
-        Args:
-            obj: The Deployment instance being displayed.
-
-        Returns:
-            The name of the associated customer.
-        """
-
-        return obj.license_token.customer.name
-
-
 @admin.register(HeartBeat)
 class HeartBeatAdmin(ModelAdmin):
     """Admin configuration for the `HeartBeat` model."""
@@ -239,7 +153,7 @@ class LicenseTokenAdmin(ModelAdmin):
     search_fields = ('customer__name', 'customer__email', 'application__name')
     ordering = ('customer', 'application')
     autocomplete_fields = ('customer', 'application')
-    inlines = (DeploymentInline, HeartBeatInline)
+    inlines = (HeartBeatInline,)
     list_display_links = list_display
 
     fieldsets = (
@@ -248,9 +162,6 @@ class LicenseTokenAdmin(ModelAdmin):
         }),
         ('Validity Window', {
             'fields': ('enabled', 'starts_at', 'expires_at'),
-        }),
-        ('Deployments', {
-            'fields': ('max_deployments', 'allow_deactivation'),
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'retrieved_at'),
