@@ -6,11 +6,11 @@ import sys
 
 from django.core.management import execute_from_command_line
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'stethoscope.main.settings')
+
 
 def main() -> None:  # pragma: nocover
     """Parse the commandline and run administrative tasks."""
-
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'stethoscope.main.settings')
 
     # Override version value
     if '--version' in sys.argv:

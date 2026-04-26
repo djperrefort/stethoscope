@@ -2,7 +2,10 @@
 
 from typing import Literal
 
+from django.conf import settings
 from django.contrib import admin
+from django.db.models import QuerySet
+from django.urls import reverse
 from unfold.admin import ModelAdmin, TabularInline
 
 from .models import Application, Customer, HeartBeat, LicenseToken
@@ -18,10 +21,11 @@ __all__ = [
 class HeartBeatInline(TabularInline):
     """An inline table of `HeartBeat` objects."""
 
-    model = HeartBeat
     extra = 0
-    readonly_fields = ('ip', 'uuid', 'created_at')
+    model = HeartBeat
+    per_page = 5
     fields = ('ip', 'uuid', 'created_at')
+    readonly_fields = fields
     ordering = ('-created_at',)
 
     def has_add_permission(self, *args, **kwargs) -> Literal[False]:
@@ -33,27 +37,28 @@ class HeartBeatInline(TabularInline):
 class LicenseTokenInline(TabularInline):
     """An inline table of `LicenseToken` objects."""
 
-    model = LicenseToken
     extra = 0
-    readonly_fields = ('token', 'starts_at', 'expires_at', 'created_at', 'updated_at')
-    fields = ('token', 'customer', 'application', 'starts_at', 'expires_at')
-    autocomplete_fields = ('customer', 'application')
+    model = LicenseToken
+    per_page = 5
+    fields = ('customer', 'application', 'starts_at', 'expires_at', 'enabled')
+    readonly_fields = fields
 
 
 @admin.register(Application)
 class ApplicationAdmin(ModelAdmin):
     """Admin configuration for the `Application` model."""
 
-    list_display = ('name', 'version', 'url', 'created_at')
+    list_display = ('name', 'version', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('name', 'version', 'description', 'url')
+    ordering = ('name',)
     readonly_fields = ('created_at', 'updated_at')
     inlines = (LicenseTokenInline,)
     list_display_links = list_display
 
     fieldsets = (
         (None, {
-            'fields': ('name', 'version', 'description', 'url'),
+            'fields': ('name', 'version', 'description'),
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -68,6 +73,7 @@ class CustomerAdmin(ModelAdmin):
     list_display = ('name', 'website', 'created_at')
     list_filter = ('billing_country', 'billing_state', 'created_at')
     search_fields = ('name', 'email', 'phone', 'website')
+    ordering = ('name',)
     readonly_fields = ('created_at', 'updated_at')
     inlines = (LicenseTokenInline,)
     list_display_links = list_display
@@ -105,6 +111,7 @@ class HeartBeatAdmin(ModelAdmin):
     list_display = ('uuid', 'ip', 'license_token', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('ip', 'uuid', 'license_token__token')
+    ordering = ('created_at',)
     readonly_fields = ('ip', 'uuid', 'license_token', 'created_at')
     list_display_links = list_display
 
@@ -124,27 +131,90 @@ class HeartBeatAdmin(ModelAdmin):
 
         return False
 
+    def get_queryset(self, request) -> QuerySet:
+        """Return heartbeats with license token relations pre-fetched.
+
+        Args:
+            request: The current HTTP request.
+
+        Returns:
+            A queryset with license_token pre-selected.
+        """
+
+        return super().get_queryset(request).select_related('license_token')
+
 
 @admin.register(LicenseToken)
 class LicenseTokenAdmin(ModelAdmin):
     """Admin configuration for the `LicenseToken` model."""
 
-    list_display = ('customer', 'application', 'starts_at', 'expires_at', 'created_at')
+    list_display = ('customer', 'application', 'starts_at', 'expires_at', 'enabled', 'created_at')
     list_filter = ('application', 'starts_at', 'expires_at', 'created_at')
     search_fields = ('customer__name', 'customer__email', 'application__name')
-    readonly_fields = ('created_at', 'updated_at', 'retrieved_at', 'retrieve_id')
+    ordering = ('customer', 'application')
     autocomplete_fields = ('customer', 'application')
     inlines = (HeartBeatInline,)
     list_display_links = list_display
 
     fieldsets = (
         (None, {
-            'fields': ('customer', 'application', 'retrieve_id'),
+            'fields': ('customer', 'application', 'retrieval_url'),
         }),
         ('Validity Window', {
-            'fields': ('starts_at', 'expires_at'),
+            'fields': ('enabled', 'starts_at', 'expires_at'),
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'retrieved_at'),
         }),
     )
+
+    def get_queryset(self, request) -> QuerySet:
+        """Return license tokens with customer and application relations pre-fetched.
+
+        Args:
+            request: The current HTTP request.
+
+        Returns:
+            A queryset with customer and application pre-selected.
+        """
+
+        return super().get_queryset(request).select_related(
+            'application',
+            'customer',
+        )
+
+    def get_readonly_fields(self, request, obj=None):
+        """Return the list of readonly fields for the model.
+
+        The `customer` and `application` are writable on record creation
+        but marked as readonly for existing records.
+        """
+
+        always_readonly = ('created_at', 'updated_at', 'retrieved_at', 'retrieval_url')
+        readonly_on_edit = always_readonly + ('customer', 'application')
+
+        if obj is None:
+            return always_readonly
+
+        return readonly_on_edit
+
+    @admin.display(description='Retrieval URL')
+    def retrieval_url(self, obj: LicenseToken) -> str:
+        """Return the retrieve endpoint URL for this token's retrieve ID as a hyperlink.
+
+        Args:
+            obj: The LicenseToken instance being displayed.
+
+        Returns:
+            An HTML anchor tag pointing to the retrieve endpoint, or a dash if no
+            retrieve ID has been assigned.
+        """
+
+        if obj.retrieved_at:
+            return 'Token has already been retrieved.'
+
+        if not obj.retrieve_id:
+            return '-'
+
+        path = reverse('licensing:retrieve', kwargs={'retrieve_id': obj.retrieve_id})
+        return settings.SERVER_URL.rstrip('/') + path

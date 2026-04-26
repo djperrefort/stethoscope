@@ -18,7 +18,7 @@ admin.site.unregister(Group)
 class UserAdmin(BaseUserAdmin, ModelAdmin):
     """Admin configuration for the `User` model.
 
-    Read/write access is restricted to superusers only.
+    Read/write access to user records is restricted to superusers only.
     """
 
     form = UserChangeForm

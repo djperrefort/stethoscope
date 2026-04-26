@@ -1,4 +1,4 @@
-"""Endpoint handlers used to define request/response processing logic."""
+"""Endpoint handlers used to define request/response logic."""
 
 from django.db.models import Q
 from django.shortcuts import render
@@ -28,7 +28,7 @@ class HeartBeatView(APIView):
 
         Applications are allowed to check in using expired or inactive tokens.
         This allows administrators to track customers who may need assistance
-        requesting/migrating to a new token.
+        requesting or migrating to a new token.
         """
 
         # Validate the request payload
@@ -77,6 +77,7 @@ class RetrieveView(APIView):
         try:
             token = LicenseToken.objects.select_related('customer', 'application').get(
                 retrieve_id=retrieve_id,
+                enabled=True,
             )
 
         except LicenseToken.DoesNotExist:
@@ -108,6 +109,7 @@ class RetrieveView(APIView):
         try:
             token = LicenseToken.objects.select_related('customer', 'application').get(
                 retrieve_id=retrieve_id,
+                enabled=True,
             )
 
         except LicenseToken.DoesNotExist:
@@ -132,10 +134,10 @@ class ValidateView(APIView):
     def post(request: Request) -> Response:
         """Return a JSON response containing the expiration time for a provided token.
 
-         Valid, currently active tokens are returned a 200 response containing
-         the token's expiration time. Invalid or inactive tokens are returned
-         a 400 error.
-         """
+        Valid, currently active tokens are returned a 200 response containing
+        the token's expiration time. Invalid or inactive tokens are returned
+        a 400 error.
+        """
 
         # Validate the request payload
         serializer = ValidateRequestSerializer(data=request.data)
@@ -152,6 +154,7 @@ class ValidateView(APIView):
                 Q(expires_at__gte=now) | Q(expires_at__isnull=True),
                 token=hashed_token,
                 starts_at__lte=now,
+                enabled=True,
             )
 
         except LicenseToken.DoesNotExist:

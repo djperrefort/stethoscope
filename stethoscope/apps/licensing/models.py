@@ -59,13 +59,15 @@ class Application(models.Model):
         ]
 
         constraints = [
-            models.UniqueConstraint(fields=['name', 'version'], name='unique_application_name_version'),
+            models.UniqueConstraint(
+                fields=['name', 'version'],
+                name='unique_application_name_version'
+            ),
         ]
 
     name = models.CharField(max_length=255)
     version = models.CharField(max_length=50, blank=True)
     description = models.TextField(blank=True)
-    url = models.URLField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -90,6 +92,7 @@ class LicenseToken(models.Model):
     token = models.CharField(max_length=64, editable=False)
     token_plain = models.CharField(max_length=64, null=True, editable=False)
     retrieve_id = models.CharField(max_length=64, null=True)
+    enabled = models.BooleanField(default=True)
     starts_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -98,20 +101,6 @@ class LicenseToken(models.Model):
 
     customer = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='license_tokens')
     application = models.ForeignKey('Application', on_delete=models.CASCADE, related_name='license_tokens')
-
-    @property
-    def is_expired(self) -> bool:
-        """Return whether the license token is expired."""
-
-        return self.expires_at is not None and timezone.now() > self.expires_at
-
-    @property
-    def is_active(self) -> bool:
-        """Return whether the license token is active."""
-
-        now = timezone.now()
-        not_yet_expired = self.expires_at is None or now <= self.expires_at
-        return self.starts_at <= now and not_yet_expired
 
     @property
     def is_retrieved(self) -> bool:
@@ -130,9 +119,9 @@ class LicenseToken(models.Model):
     def save(self, *args, **kwargs) -> None:
         """Save the token object.
 
-         When a new token is created, the token value and retrieval ID are set
-         using dynamically generated value and can not be set manually.
-         """
+        When a new token is created, the token value and retrieval ID are set
+        using dynamically generated values and cannot be set manually.
+        """
 
         if self.pk is None:
             token_plain = secrets.token_hex(32)
@@ -143,7 +132,7 @@ class LicenseToken(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:  # pragma: nocover
-        return f'Token {self.id}'
+        return f'T-{self.id}'
 
 
 class HeartBeat(models.Model):
@@ -168,4 +157,4 @@ class HeartBeat(models.Model):
     license_token = models.ForeignKey('LicenseToken', on_delete=models.CASCADE, related_name='heartbeats')
 
     def __str__(self) -> str:  # pragma: nocover
-        return f'Heartbeat {self.id}'
+        return f'H-{self.id}'

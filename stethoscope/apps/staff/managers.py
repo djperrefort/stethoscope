@@ -39,7 +39,7 @@ class UserManager(BaseUserManager):
             **extra_fields: Additional field values passed to the model constructor.
 
         Returns:
-            The newly created `User` instance with superuser privileges.
+            The newly created `User` instance.
         """
 
         extra_fields['is_superuser'] = True
