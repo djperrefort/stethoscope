@@ -96,7 +96,7 @@ class LicenseToken(models.Model):
     enabled = models.BooleanField(default=True)
     starts_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField(null=True, blank=True)
-    max_deployments = models.PositiveIntegerField(null=True, blank=True)
+    max_deployments = models.PositiveIntegerField(default=1, null=True, blank=True)
     allow_deactivation = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
